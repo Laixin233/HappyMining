@@ -7,3 +7,10 @@ d22 = d2[ d2['门店类型'] != 14]
 df3 = pd.merge(d1,d22,on='商品名称')
 
 df3.to_csv("./smdata_join.csv",index=0)
+
+#对数据进行分组处理
+filiale = sales_data.groupby(['分公司']).agg({'门店名称':'count','日均销售数量':'sum','日均销售金额':'sum'})
+#非零处理
+shop = pd.read_csv('shop_category.csv')
+shop1 = shop[shop['日均销售金额']!=0]
+shop1.to_csv("shop_category2.csv",index=0)
