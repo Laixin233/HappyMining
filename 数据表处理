@@ -1,1 +1,9 @@
+import pandas as pd
 
+d1 = pd.read_csv('LP_attr.csv')
+d2 = pd.read_csv('111.csv')
+d22 = d2[ d2['门店类型'] != 14]
+
+df3 = pd.merge(d1,d22,on='商品名称')
+
+df3.to_csv("./smdata_join.csv",index=0)
