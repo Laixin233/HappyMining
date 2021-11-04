@@ -1,0 +1,40 @@
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+x=data.data#还没赋予
+y=data.target#还没赋予
+#归一化处理
+x=StandardScaler().fit_transform(x)
+Xtrain, Xtest, Ytrain, Ytest = train_test_split(x,y,test_size=0.3,random_state=420)
+Kernel = ["linear","poly","rbf","sigmoid"]
+for kernel in Kernel:
+    #degree参是多项式的次数，gamma出现在rbf，poly，sigmoid中，是核函数的系数，通过下面的调试可以找到最大值
+    clf= SVC(kernel = kernel
+             , gamma="auto"
+             , degree = 1
+             , cache_size=5000
+           ).fit(Xtrain,Ytrain)
+    print("The accuracy under kernel %s is %f" % (kernel,clf.score(Xtest,Ytest)))
+#以下给出学习曲线和调参
+score = []
+gamma_range = np.logspace(-10, 1, 50)  # 给一个调参范围
+for i in gamma_range:
+    clf = SVC(kernel="rbf", gamma=i, cache_size=5000).fit(Xtrain, Ytrain)
+    score.append(clf.score(Xtest, Ytest))
+
+print(max(score), gamma_range[score.index(max(score))])
+plt.plot(gamma_range, score)
+plt.show()
+# 换rbf C的软间隔范围也要调试
+score = []
+C_range = np.linspace(0.01, 30, 50)
+for i in C_range:
+    clf = SVC(kernel="rbf", C=i, gamma=
+    0.012742749857031322, cache_size=5000).fit(Xtrain, Ytrain)
+    score.append(clf.score(Xtest, Ytest))
+
+print(max(score), C_range[score.index(max(score))])
+plt.plot(C_range, score)
+plt.show()
