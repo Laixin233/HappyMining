@@ -1,0 +1,68 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.svm import OneClassSVM
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+#data=
+
+#根据肘曲线确定K
+n_cluster = range(1, 20)#目前设定的范围是1-20中确定
+kmeans = [KMeans(n_clusters=i).fit(data) for i in n_cluster]
+scores = [kmeans[i].score(data) for i in range(len(kmeans))]
+fig, ax = plt.subplots(figsize=(10,6))
+ax.plot(n_cluster, scores)
+plt.xlabel('Number of Clusters')
+plt.ylabel('Score')
+plt.title('Elbow Curve')
+plt.show()
+ #训练
+X = data
+X = X.reset_index(drop=True)
+km = KMeans(n_clusters=8)
+km.fit(X)
+km.predict(X)
+#构造距离公式，这里默认用了2范数，其他范数可以用linalg.norm调
+def getDistanceByPoint(data, model):
+    distance = pd.Series()
+    for i in range(0,len(data)):
+        Xa = np.array(data.loc[i])
+        Xb = model.cluster_centers_[model.labels_[i]-1]
+        distance.at[i]=np.linalg.norm(Xa-Xb)
+    return distance
+
+outliers_fraction = 0.01
+kmeans = [KMeans(n_clusters=i).fit(data) for i in n_cluster]
+distance = getDistanceByPoint(data, kmeans[8])
+number_of_outliers = int(outliers_fraction*len(distance)) #这里确定的是每组异常值的个数，这边采用了一个组内个数*比例的方式，距离最大的视为异常值，所以最好数据是标准化过的数据
+threshold = distance.nlargest(number_of_outliers).min()
+df['anomaly1'] = (distance >= threshold).astype(int)
+fig, ax = plt.subplots(figsize=(10,6))
+colors = {0:'blue', 1:'red'}
+ax.scatter(df[''], df[''], c=df["anomaly1"].apply(lambda x: colors[x]))
+plt.xlabel('')
+plt.ylabel('')
+plt.show()
+fig, ax = plt.subplots(figsize=(10,6))
+a = df.loc[df['anomaly1'] == 1, ['Strike']] #anomaly
+
+ax.plot(df[df.columns[0]],df['Strike'], color='blue', label='Normal')
+ax.scatter(a[a.columns[0]],a['Strike'], color='red', label='Anomaly')
+plt.xlabel('Time')
+plt.ylabel('Strike')
+plt.legend()
+plt.show()
+#基于SVM的预测
+scaler = StandardScaler()
+np_scaled = scaler.fit_transform(data)
+data = pd.DataFrame(np_scaled)
+# train oneclassSVM
+model = OneClassSVM(nu=outliers_fraction, kernel="rbf", gamma=0.1)#这里没有配置核函数选择以及参数的调参，nu是训练误差，也就是异常值比例
+model.fit(data)
+df['anomaly3'] = pd.Series(model.predict(data))
+fig, ax = plt.subplots(figsize=(10,6))
+a = df.loc[df['anomaly3'] == -1, ['Strike']] #anomaly
+print(a)
+ax.plot(df[df.columns[0]],df['Strike'], color='blue')
+ax.scatter(a[a.columns[0]],a['Strike'], color='red')
+plt.show()
